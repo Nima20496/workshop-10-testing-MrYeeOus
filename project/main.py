@@ -13,3 +13,9 @@ def index():
 def profile():
     return render_template('profile.html', name=current_user.name)
 
+# @main.route('/tester')
+# def tester():
+#     print("USER: ")
+#     print(current_user.is_authenticated)
+#     return render_template('index.html')
+

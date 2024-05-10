@@ -5,9 +5,6 @@ from project.models import User
 from werkzeug.security import check_password_hash
 
 
-from flask_login import current_user
-
-
 class TestWebApp(unittest.TestCase):
     def setUp(self):
         self.app = create_app({
@@ -39,10 +36,7 @@ class TestWebApp(unittest.TestCase):
 
     def test_no_access_to_profile(self):
         # TODO: Check that non-logged-in user should be redirected to /login
-        if current_user == None:
-            return False
-        return current_user.is_authenticated
-
+        assert False
 
     def test_register_user(self):
         response = self.client.post('/signup', data = {
@@ -79,8 +73,6 @@ class TestWebApp(unittest.TestCase):
 
     def test_sql_injection(self):
         response = self.client.post('/signup', data = {
-            # This code will comment out the rest of the fields (email/name/password), 
-            # and then destroy the 'user' table
             'email' : 'user@test.com"; drop table user; -- ',
             'name' : 'test user',
             'password' : 'test123'

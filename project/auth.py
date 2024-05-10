@@ -40,7 +40,19 @@ def signup_post():
     name = request.form.get('name')
     password = request.form.get('password')
 
-    user = db.session.execute(text('select * from user where email = "' + email +'"')).all()
+    # user = db.session.execute(text('select * from user where email = "' + email +'"')).all()
+    query = text('SELECT * FROM user WHERE email = :email')
+    user = db.session.execute(query, {'email': email}).all()
+
+    # The old code violates the security principle of Separation of Duties, where
+    # the existing code is able to complete a task (and include injection) in 
+    # a single line of code.
+
+    # The new code amends the violation by parameterising the prompt from the query,
+    # thus preventing the injection attack.
+
+
+
     if len(user) > 0: # if a user is found, we want to redirect back to signup page so user can try again
         flash('Email address already exists')  # 'flash' function stores a message accessible in the template code.
         current_app.logger.debug("User email already exists")
