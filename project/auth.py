@@ -21,6 +21,7 @@ def login_post():
 
     # check if the user actually exists
     # take the user-supplied password and compare it with the stored password
+    #Pretend it is hashed
     if not user or not (user.password == password):
         flash('Please check your login details and try again.')
         current_app.logger.warning("User login failed")
@@ -43,6 +44,79 @@ def signup_post():
     # user = db.session.execute(text('select * from user where email = "' + email +'"')).all()
     query = text('SELECT * FROM user WHERE email = :email')
     user = db.session.execute(query, {'email': email}).all()
+
+    current_app.logger.debug(user)
+
+    # The old code violates the security principle of Separation of Duties, where
+    # the existing code is able to complete a task (and include injection) in 
+    # a single line of code.
+
+    # The new code amends the violation by parameterising the prompt from the query,
+    # thus preventing the injection attack.
+
+
+
+    if len(user) > 0: # if a user is found, we want to redirect back to signup page so user can try again
+        flash('Email address already exists')  # 'flash' function stores a message accessible in the template code.
+        current_app.logger.debug("User email already exists")
+        return redirect(url_for('auth.signup'))
+
+    # create a new user with the form data. TODO: Hash the password so the plaintext version isn't saved.
+
+
+    # Hash the password:
+    password = generate_password_hash(str(password), method="pbkdf2:sha256")
+
+    new_user = User(email=email, name=name, password=password)
+
+    # add the new user to the database
+    db.session.add(new_user)
+    db.session.commit()
+
+    return redirect(url_for('auth.login'))
+
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user();
+    return redirect(url_for('main.index'))
+
+# See https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login for more information
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@auth.route('/signup2', methods=['POST'])
+def signup_post2():
+    email = 'user@test.com"; drop table user; -- '
+    name = 'test user'
+    password = 'test123'
+
+    # user = db.session.execute(text('select * from user where email = "' + email +'"')).all()
+    query = text('SELECT * FROM user WHERE email = :email')
+    user = db.session.execute(query, {'email': email}).all()
+
+    current_app.logger.debug(user)
 
     # The old code violates the security principle of Separation of Duties, where
     # the existing code is able to complete a task (and include injection) in 
@@ -67,10 +141,3 @@ def signup_post():
 
     return redirect(url_for('auth.login'))
 
-@auth.route('/logout')
-@login_required
-def logout():
-    logout_user();
-    return redirect(url_for('main.index'))
-
-# See https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login for more information

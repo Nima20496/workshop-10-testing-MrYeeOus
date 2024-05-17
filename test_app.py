@@ -86,6 +86,7 @@ class TestWebApp(unittest.TestCase):
             'password' : 'test123'
         }, follow_redirects = True)
         assert response.status_code == 200 
+        # Look for an error 405 "Method not allowed"
 
     def test_xss_vulnerability(self):
         # TODO: Can we store javascript tags in the username field?
